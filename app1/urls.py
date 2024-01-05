@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path,include
+from django.urls import path
 from . import views
 from django.views.generic import RedirectView
 
@@ -16,17 +16,6 @@ urlpatterns = [
     path('cart',views.cart),
     path('delete/<int:id>',views.delete_order_item),
 # //////////////////////////////////////////////////////////////////
-    # path('process_payment/', views.process_payment, name='process_payment'),
-    # path('execute_payment/', views.execute_payment, name='paypal_execute'),
-    # path('select_address/', views.select_address, name='select_address'),
-    # path('select_address.html', RedirectView.as_view(url='/select_address/'), name='select_address_html'),
-    # path('process_address_selection/', views.process_address_selection, name='process_address_selection'),
-    # path('enter_address/', views.enter_address, name='enter_address'),
-    # path('process_order/', views.process_order, name='process_order'),
-    # path('process_payment/', views.process_payment, name='process_payment'),
-    # path('main_page/', views.main_page, name='main_page'),
-    # path('credit_card_form/', views.credit_card_form, name='credit_card_form'),
-    # path('process_credit_card/', views.process_credit_card, name='process_credit_card'),
     path('search/', views.search_results, name='search_results'),
 # ///////////////////////////////////////////////////////////////////////////////
     path('your_addresses',views.your_addresses),
@@ -45,7 +34,8 @@ urlpatterns = [
     path('your_account', views.your_account, name='your_account'),
     path('complete', views.complete),
     path('search_order', views.search_order),
-    path('invoice', views.invoice)
+    path('invoice', views.invoice),
+    path('delete_address/<int:id>', views.delete_address),
 ]
 
 

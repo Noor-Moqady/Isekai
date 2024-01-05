@@ -5,13 +5,11 @@ import bcrypt
 from django.utils import timezone
 import random
 import string
-import paypalrestsdk
 from django.conf import settings
 import stripe
 from .models import OrderItem
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
-from django.contrib.auth.forms import PasswordChangeForm
 
 
 
@@ -29,27 +27,22 @@ def index(request):
     }
     return render(request, 'home.html', context)
 def product(request,id):
-    this_item=Item.objects.get(id=int(id))
-    saving=this_item.price-this_item.discount_price
-    context={
-        'this_item':this_item,
-        'saving': saving,
-        'specific_user': User.objects.get(id=request.session['user_id'])
-    }
-    return render(request,'product_main_page.html',context)
+    if 'user_id' in request.session:
+        this_item=Item.objects.get(id=int(id))
+        saving=this_item.price-this_item.discount_price
+        context={
+            'this_item':this_item,
+            'saving': saving,
+            'specific_user': User.objects.get(id=request.session['user_id'])
+        }
+        return render(request,'product_main_page.html',context)
+    else:
+        return redirect ('/login')
 
 def register(request):
     if request.method == "POST":
         errors = User.objects.basic_validator1(request.POST)
         if len(errors) > 0 :
-            # if 'username' in errors:
-            #     request.session['username']=errors['username']
-            # if 'email' in errors:
-            #     request.session['email']=errors['email']
-            # if 'password' in errors:
-            #     request.session['password']=errors['password']
-            # if 'confirm' in errors:
-            #     request.session['confirm']=errors['confirm']
             return redirect('/register')
         else:
             hash1= bcrypt.hashpw(request.POST['password'].encode(), bcrypt.gensalt()).decode()
@@ -140,138 +133,13 @@ def logout(request):
     return redirect('/')
 
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-# def process_payment(request):
-#     if request.method == "POST":
-#         order = Order.objects.get(user=request.user, ordered=False)
-#         total_amount = calculate_total_order_amount(order)
-
-#         # Create a Checkout Session
-#         session = stripe.checkout.Session.create(
-#             payment_method_types=['card'],
-#             line_items=[{
-#                 'price_data': {
-#                     'currency': 'usd',
-#                     'product_data': {
-#                         'name': 'Your Product',
-#                     },
-#                     'unit_amount': int(total_amount * 100),  # Amount in currentsy
-#                 },
-#                 'quantity': 1,
-#             }],
-#             mode='payment',
-#             success_url=request.build_absolute_uri(reverse('order_success')),
-#             cancel_url=request.build_absolute_uri(reverse('cart')),
-#         )
-
-#         return render(request, 'mock_payment_form.html', {'session_id': session.id})
-
-#     return redirect('/cart')
-
-
-# def execute_payment(request):
-#     payment_id = request.GET.get('paymentId')
-#     payer_id = request.GET.get('PayerID')
-
-#     payment = paypalrestsdk.Payment.find(payment_id)
-#     if payment.execute({"payer_id": payer_id}):
-#         order = Order.objects.get(user=request.user, ordered=False)
-#         order.ordered = True
-#         order.save()
-#         return render(request, 'order_success.html')
-#     else:
-#         messages.error(request, "Failed to execute PayPal payment. Please try again.")
-#         return redirect('/cart')
-
-
-# def calculate_total_order_amount(order):
-#     total_amount = 0
-#     for item in order.items.all():
-#         total_amount += item.item.price * item.quantity
-#     return total_amount
-
-
-# def enter_address(request):
-#     if request.method == 'POST':
-#         form = OrderForm(request.POST)
-#         if form.is_valid():
-
-#             return render(request, 'processing_payment.html')
-#     else:
-#         form = OrderForm()
-
-#     return render(request, 'address_form.html', {'form': form})
-
-# def process_address_selection(request):
-#     if request.method == 'POST':
-#         selected_address = request.POST.get('address')
-#         if selected_address:
-#             # Process the selected address as needed
-#             this_user = User.objects.get(id=request.session['user_id'])
-#             this_user.order_items_for_user.all().delete()
-
-#             return redirect('credit_card_form')
-
-
-#     return HttpResponse("Invalid request or address selection")
-# def process_order(request):
-
-#     if 'user_id' in request.session:
-#         this_user = User.objects.get(id=request.session['user_id'])
-#         this_user.order_items_for_user.all().delete()
-
-#     return redirect('main_page')
-# def main_page(request):
-
-#     return render(request, 'home.html')
-
-# def credit_card_form(request):
-#     return render(request, 'credit_card_form.html')
-
-# def process_credit_card(request):
-
-#     if 'user_id' in request.session:
-#         this_user = User.objects.get(id=request.session['user_id'])
-#         this_user.order_items_for_user.all().delete()
-
-#     return redirect('main_page')
-
-# def main_page(request):
-#     cart_item_count = 0
-
-#     if 'user_id' in request.session:
-#         this_user = User.objects.get(id=request.session['user_id'])
-#         if Order.objects.filter(user=this_user, ordered=False):
-#             cart_item_count = this_user.order_items_for_user.filter(ordered=False).count()
-
-#     context = {
-#         'cart_item_count': cart_item_count,
-#     }
-
-#     return render(request, 'home.html', context)
-
 
 def search_results(request):
-
-    # query = request.GET.get('query', '')
-    # category = request.GET.get('category', 'all')
-
-
-    # if category == 'all':
-    #     results = Item.objects.filter(title__icontains=query)
-    # else:
-    #     results = Item.objects.filter(title__icontains=query, category=category)
-
-    # context = {'query': query, 'category': category, 'results': results}
-    print('Motaz')
-    print(request.POST['search_ajax'])
     search = Item.objects.filter(title__startswith=request.POST['search_ajax'])
-    if search:
-        print(request.POST['search_ajax'])
-        for items in  search.all():
-            print(items.title)
-        context={
-            'search':search.all()
-        }
+    if search:            
+            context={
+                'search':search.all()
+            }
             
     return render(request,'ajax_search.html',context)
 
@@ -322,31 +190,6 @@ def add_new_address(request):
             return redirect('/your_addresses')
 
 def select_address(request):
-    # //////////noor
-    # if not 'user_id' in request.session:
-    #     messages.error(request,"You have to login first")
-    #     return redirect('/login')
-    # else:
-    #     if request.method == 'GET':
-    #         context = {
-    #         'alladdresses': Address.objects.all(),
-    #         'specific_user': User.objects.get(id=request.session['user_id'])
-    #         }
-    #         return render(request, 'select_address.html' ,context)
-    #     if request.method == 'POST':
-    #             request.session['shipping_address_name'] = request.POST['shipping_address_name']
-    #             request.session['shipping_address_country'] = request.POST['shipping_address_country']
-    #             request.session['shipping_address_town'] = request.POST['shipping_address_town']
-    #             request.session['shipping_address_apartment'] = request.POST['shipping_address_apartment']
-    #             request.session['shipping_address_street'] = request.POST['shipping_address_street']
-    #             request.session['shipping_address_landmark'] = request.POST['shipping_address_landmark']
-    #             request.session['shipping_address_pincode'] = request.POST['shipping_address_pincode']
-    #             request.session['shipping_address_mobile'] = request.POST['shipping_address_mobile']
-    #             request.session['shipping_address_id'] = request.POST['shipping_address_id']
-
-                # return redirect('/select_payment_method/' + request.POST['shipping_address'])
-                # return redirect('/select_payment_method')
-    # //////////motaz
         if not 'user_id' in request.session:
             messages.error(request,"You have to login first")
             return redirect('/login')
@@ -357,10 +200,6 @@ def select_address(request):
                 'specific_user': User.objects.get(id=request.session['user_id'])
                 }
                 return render(request, 'select_address_motaz.html' ,context)
-        
-    
-        # return redirect('/select_payment_method')
-
 
 
 def select_payment_method(request,id):
@@ -527,14 +366,7 @@ def change_password(request):
             else:
                 messages.error(request, "Invalid authentifications")
                 return render(request, 'change_password.html')
-        # form = PasswordChangeForm(request.user, request.POST)
-        # if form.is_valid():
-        #     user = form.save()
-        #     update_session_auth_hash(request, user)
-        #     messages.success(request, 'Your password was successfully updated!')
-        #     return redirect('your_account.html')
-        # else:
-        #     messages.error(request, 'Please correct the error below.')
+
     else:
         
         return render(request, 'change_password.html')
@@ -544,9 +376,6 @@ def search_order(request):
     
     search = Order.objects.filter(ref_code__startswith=request.POST['search_order_ajax'])
     if search:
-        
-        for items in  search.all():
-            
             context={
                 'search':search.all()
             }
@@ -558,3 +387,7 @@ def invoice(request):
                 'specific_order': Order.objects.get(id=request.session['order_id'])
             }
     return render(request,'index.html', context)
+def delete_address(request, id):
+    this_address=Address.objects.get(id=int(id))
+    this_address.delete()
+    return redirect('/your_addresses')

@@ -1,7 +1,7 @@
 from django.db import models
 import bcrypt
 import re
-from django import forms
+# from django import forms
 
 class UserManager(models.Manager):
     def basic_validator1(self, postData):
@@ -131,11 +131,6 @@ class Order(models.Model):
     def __str__(self):
         return self.user.username
 
-
-class OrderForm(forms.Form):
-    name = forms.CharField(max_length=100)
-    address = forms.CharField(widget=forms.Textarea)
-    payment_method = forms.ChoiceField(choices=[('paypal', 'PayPal'), ('credit_card', 'Credit Card')])
 
 class payment_info(models.Model):#i add this \\motaz
     order=models.ForeignKey(Order,related_name='order_payment_info',on_delete=models.CASCADE )

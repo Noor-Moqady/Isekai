@@ -124,7 +124,3 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR,'media')
 STATICFILES_DIRS=(os.path.join(BASE_DIR,'static'),)
 
-
-# PayPal settings AyaG
-PAYPAL_CLIENT_ID = 'your-paypal-client-id'
-PAYPAL_CLIENT_SECRET = 'your-paypal-client-secret'
