@@ -241,6 +241,9 @@ def create_order(request):
             return ''.join(random.choices(string.ascii_lowercase + string.digits, k=20))
         ref=create_ref_code()
         this_address=Address.objects.get(id=request.session['user_address_id'])
+
+        # specific_order = models.create_order()
+
         specific_order = Order.objects.create(user=specific_user,
                                             ref_code=ref,
                                             payment=request.session.get('paymentMethod'),

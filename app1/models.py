@@ -145,6 +145,16 @@ class payment_info(models.Model):#i add this \\motaz
 
 
 
+# def create_order():
+#     #ORM Query
+#     specific_order = Order.objects.create(user=specific_user,
+#                                             ref_code=ref,
+#                                             payment=request.session.get('paymentMethod'),
+#                                             ordered=True,
+#                                             shipping_address=this_address,
+#                                             total_payed_amount=float(request.session['total'])
+#                                             )#motaz
+#     return specific_order
 
 
 
